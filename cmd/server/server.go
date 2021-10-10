@@ -4,6 +4,8 @@ import (
 	"log"
 	"net"
 
+	"github.com/codeedu/fc2-grpc/pb"
+	"github.com/codeedu/fc2-grpc/services"
 	"google.golang.org/grpc"
 )
 
@@ -15,6 +17,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
+	pb.RegisterUserServiceServer(grpcServer, services.NewUserService())
 
 	if error := grpcServer.Serve(listener); error != nil {
 		log.Fatalf("Could not serve: %v", error)
