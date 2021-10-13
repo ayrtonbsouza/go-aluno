@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/codeedu/fc2-grpc/pb"
@@ -20,7 +21,8 @@ func main() {
 
 	client := pb.NewUserServiceClient(connection)
 
-	AddUser(client)
+	// AddUser(client)
+	AddUserVerbose(client)
 }
 
 func AddUser(client pb.UserServiceClient) {
@@ -37,4 +39,29 @@ func AddUser(client pb.UserServiceClient) {
 	}
 
 	fmt.Println(response)
+}
+
+func AddUserVerbose(client pb.UserServiceClient) {
+	request := &pb.User{
+		Id:    "0",
+		Name:  "John Doe",
+		Email: "johndoe@mail.com",
+	}
+
+	responseStream, error := client.AddUserVerbose(context.Background(), request)
+
+	if error != nil {
+		log.Fatalf("Could not make gRPC request: %v", error)
+	}
+
+	for {
+		stream, error := responseStream.Recv()
+		if error == io.EOF {
+			break
+		}
+		if error != nil {
+			log.Fatalf("Could not receive the message: %v", error)
+		}
+		fmt.Println("Status:", stream.Status, " - ", stream.GetUser())
+	}
 }
