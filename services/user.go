@@ -88,3 +88,24 @@ func (*UserService) AddUsers(stream pb.UserService_AddUsersServer) error {
 		fmt.Println("Adding", request.GetName())
 	}
 }
+
+func (*UserService) AddUserStreamBoth(stream pb.UserService_AddUserStreamBothServer) error {
+	for {
+		request, error := stream.Recv()
+
+		if error == io.EOF {
+			return nil
+		}
+		if error != nil {
+			log.Fatalf("Error receiving stream from the client: %v", error)
+		}
+		error = stream.Send(&pb.UserResultStream{
+			Status: "Added",
+			User:   request,
+		})
+
+		if error != nil {
+			log.Fatalf("Error sending stream to the client: %v", error)
+		}
+	}
+}
